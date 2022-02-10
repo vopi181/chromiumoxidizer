@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import os from 'os';
 import drivelist from 'drivelist';
 import figlet from 'figlet';
-
+import { program } from 'commander';
 
 
 /*
@@ -13,14 +13,9 @@ import figlet from 'figlet';
 */
 function isChrome(fileName) {
     var fileName = fileName.toLowerCase();
-    if (fileName.includes("chrome.exe")) {
+    // should cover most cases of V8 (according to  my limited research of looking at a view apps' folders)
+    if (fileName.includes("snapshot_blob.bin")) {
         return true;
-    } else if (fileName.includes("chromium.exe")) {
-        return true;
-    } else if (fileName.includes("snapshot_blob.bin")) {
-        return true;
-        // } else if (fileName.includes("chrome_elf.dll")) {
-        //     return true;
     } else {
         return false;
     }
@@ -42,29 +37,62 @@ async function* walk(dir) {
 
     }
 }
+
+
+program.name('ChromiumOxidizer')
+    .description("Walks directories and finds chrome instances (based off 'snapshot_blob.bin')\n*By Default, searches every mountpoint directory*")
+    .option('-d, --dir <directory>', 'Directory to start searching for chrome instances.');
+
+
+
+async function logo() {
+    return new Promise((resolve, reject) => {
+        figlet("ChromiumOxidizer",  function (err, data) {
+            resolve(chalk.bgBlue(data));
+        });
+    })
+}
+
 async function main() {
 
-    figlet("ChromiumOxidizer", function (err, data) {
-        console.log(chalk.bgBlue(data));
-    })
+    program.parse(process.argv);
+    const options = program.opts();
 
-
-
+    await logo().then(async (data) => {
+        console.log(data);
+    });
 
     var count = 0;
-    const drives = await drivelist.list()
-    var mounts = [];
-    for (const drive of drives) {
-        try {
-            mounts.push(drive.mountpoints[0].path)
-        } catch (error) {
+
+
+    if (!options.dir) {
+
+        const drives = await drivelist.list()
+        var mounts = [];
+        for (const drive of drives) {
+            try {
+                mounts.push(drive.mountpoints[0].path)
+            } catch (error) {
+
+            }
 
         }
+        console.log(chalk.green(`[+] Mounted Drives: ${mounts}`));
+        for (const mount of mounts) {
+            console.log(chalk.green("Scanning: " + mount));
+            for await (const p of walk(mount)) {
+                if (isChrome(p)) {
+                    console.log(chalk.green(`[${count + 1}] `) + chalk.yellowBright(p));
+                    count++;
+                }
+            }
+        }
+    } else {
 
-    }
-    for (const mount of mounts) {
-        console.log(chalk.green("Scanning: " + mount));
-        for await (const p of walk(mount)) {
+
+        console.log(chalk.green(`[+] Scanning: ${options.dir}`));
+        for await (const p of walk(options.dir)) {
+
             if (isChrome(p)) {
                 console.log(chalk.green(`[${count + 1}] `) + chalk.yellowBright(p));
                 count++;
