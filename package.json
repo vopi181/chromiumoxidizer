@@ -1,6 +1,6 @@
 {
   "name": "chromiumoxidizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "detects chromium/chrome/electron/CEF/etc instances on your local harddrive",
   "main": "index.js",
   "scripts": {
