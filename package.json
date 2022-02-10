@@ -1,0 +1,20 @@
+{
+  "name": "chromiumoxidizer",
+  "version": "1.0.0",
+  "description": "detects chromium/chrome/electron/CEF/etc instances on your local harddrive",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "dompace181@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.0.0",
+    "drivelist": "^9.2.4",
+    "figlet": "^1.5.2"
+  },
+  "type": "module",
+  "bin": {
+    "chromiumoxidizer": "./index.js"
+  }
+}
